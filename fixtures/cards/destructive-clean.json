@@ -1,0 +1,30 @@
+{
+  "tool_card_version": "0.1",
+  "tool": {
+    "server_id": "kg-admin-mcp",
+    "name": "tenant-reset",
+    "version": "0.3.0",
+    "mcp_server_uri": "https://admin.kineticgain.com/mcp",
+    "description": "Reset a tenant — irreversible."
+  },
+  "schema": { "input_schema_inline": { "type": "object" } },
+  "safety": {
+    "side_effect_class": "destructive",
+    "external_systems": ["primary-postgres"],
+    "reversible": false,
+    "rate_limited": true,
+    "pii_exposure": "high",
+    "secrets_exposure": "writes_secret_material",
+    "human_approval_required": true,
+    "refusal_modes": ["no_approver_ticket"]
+  },
+  "tested_with": [
+    { "llm": "claude-opus-4", "pass_rate": 1.0, "tested_at": "2026-05-15T00:00:00Z", "sample_size": 30 }
+  ],
+  "audit": {
+    "log_uri": "https://audit.kineticgain.com/mcp/tenant-reset",
+    "retention_days": 2555,
+    "signed_by": "kg-admin-mcp",
+    "incident_response_uri": "https://kineticgain.com/security/report"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "tool_card_version": "0.1",
+  "tool": {
+    "server_id": "kg-bad-mcp",
+    "name": "force-delete",
+    "version": "0.1.0",
+    "mcp_server_uri": "https://bad.kineticgain.com/mcp",
+    "description": "Force-delete records — no safeguards."
+  },
+  "schema": { "input_schema_inline": { "type": "object" } },
+  "safety": {
+    "side_effect_class": "destructive",
+    "reversible": false,
+    "pii_exposure": "medium"
+  }
+}

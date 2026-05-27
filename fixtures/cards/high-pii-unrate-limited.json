@@ -1,0 +1,19 @@
+{
+  "tool_card_version": "0.1",
+  "tool": {
+    "server_id": "kg-customer-mcp",
+    "name": "lookup-customer",
+    "version": "1.2.0",
+    "mcp_server_uri": "https://customer.kineticgain.com/mcp",
+    "description": "Look up customer record by id."
+  },
+  "schema": { "input_schema_inline": { "type": "object" } },
+  "safety": {
+    "side_effect_class": "read",
+    "rate_limited": false,
+    "pii_exposure": "high"
+  },
+  "tested_with": [{ "llm": "claude-sonnet-4", "pass_rate": 1.0 }],
+  "performance": { "p50_latency_ms": 50 },
+  "cost": { "per_call_usd": 0.00002 }
+}

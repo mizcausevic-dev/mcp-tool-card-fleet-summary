@@ -1,0 +1,23 @@
+{
+  "tool_card_version": "0.1",
+  "tool": {
+    "server_id": "kg-research-mcp",
+    "name": "search-vectorstore",
+    "version": "1.0.0",
+    "mcp_server_uri": "https://research.kineticgain.com/mcp",
+    "description": "Search the procurement vector store."
+  },
+  "schema": { "input_schema_inline": { "type": "object", "required": ["query"] } },
+  "safety": {
+    "side_effect_class": "read",
+    "reversible": true,
+    "rate_limited": true,
+    "pii_exposure": "low",
+    "secrets_exposure": "none"
+  },
+  "tested_with": [
+    { "llm": "claude-opus-4", "pass_rate": 0.98, "tested_at": "2026-05-20T00:00:00Z", "sample_size": 50 }
+  ],
+  "performance": { "p50_latency_ms": 90, "p95_latency_ms": 400 },
+  "cost": { "per_call_usd": 0.0001 }
+}
