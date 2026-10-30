@@ -32,8 +32,20 @@ Part of the [Kinetic Gain Suite](https://suite.kineticgain.com/).
 
 ## CLI
 
+The unscoped `mcp-tool-card-fleet-summary` name returned npm E404 on 2026-10-30. Run this source checkout instead:
+
 ```
-npx mcp-tool-card-fleet-summary <cards-dir>
+git clone https://github.com/mizcausevic-dev/mcp-tool-card-fleet-summary.git
+cd mcp-tool-card-fleet-summary
+npm ci
+npm run build
+node dist/cli.js fixtures/cards --format summary
+```
+
+From the checkout, the CLI accepts:
+
+```
+node dist/cli.js <cards-dir>
     [--format json|markdown|summary]
     [--now <iso>]
     [--fail-on-high] [--fail-on-gaps]
@@ -48,8 +60,10 @@ Exit codes:
 
 ## Library
 
+From the built checkout:
+
 ```ts
-import { summarize, toMarkdown } from "mcp-tool-card-fleet-summary";
+import { summarize, toMarkdown } from "./dist/index.js";
 
 const report = summarize(cards);
 console.log(report.bySideEffect);     // { read, mutating, external, destructive }
