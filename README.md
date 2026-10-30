@@ -3,7 +3,7 @@
 [![CI](https://github.com/mizcausevic-dev/mcp-tool-card-fleet-summary/actions/workflows/ci.yml/badge.svg)](https://github.com/mizcausevic-dev/mcp-tool-card-fleet-summary/actions/workflows/ci.yml)
 [![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
 
-Fleet-analyze a directory of [MCP Tool Card](https://github.com/mizcausevic-dev/mcp-tool-card-spec) documents. Counts by side-effect class and pii_exposure, surfaces the governance gaps that hurt an audit — destructive tools without human approval / audit log / incident-response URI, high-PII tools without rate limiting, secret-writing tools without an audit log, tools without `tested_with` evidence.
+Fleet-analyze a directory of [MCP Tool Card](https://github.com/mizcausevic-dev/mcp-tool-card-spec) documents. Counts by side-effect class, PII and secrets exposure, reversibility, and approval, surfaces the governance gaps that hurt an audit — destructive tools without human approval / audit log / incident-response URI, high-PII tools without rate limiting, secret-writing tools without an audit log, tools without `tested_with` evidence.
 
 Makes the fleet-summary tool family a quartet:
 
@@ -36,14 +36,14 @@ Part of the [Kinetic Gain Suite](https://suite.kineticgain.com/).
 npx mcp-tool-card-fleet-summary <cards-dir>
     [--format json|markdown|summary]
     [--now <iso>]
-    [--fail-on-high]
+    [--fail-on-high] [--fail-on-gaps]
     [--out FILE]
 ```
 
 Exit codes:
 
-- `0` — no high findings (or `--fail-on-high` not set)
-- `1` — high finding AND `--fail-on-high` set
+- `0` — no findings selected by an enabled gate
+- `1` — high finding with `--fail-on-high`, or a destructive approval gap with `--fail-on-gaps`
 - `2` — usage / I/O error
 
 ## Library
@@ -54,6 +54,8 @@ import { summarize, toMarkdown } from "mcp-tool-card-fleet-summary";
 const report = summarize(cards);
 console.log(report.bySideEffect);     // { read, mutating, external, destructive }
 console.log(report.byPiiExposure);    // { none, low, medium, high, unset }
+console.log(report.bySecretsExposure); // { none, reads_secret_material, writes_secret_material, handles_keys, unset }
+console.log(report.reversibleTools);   // declared reversible cards
 console.log(report.findings);
 console.log(toMarkdown(report));
 ```
@@ -63,7 +65,7 @@ console.log(toMarkdown(report));
 - [**`mcp-tool-card-spec`**](https://github.com/mizcausevic-dev/mcp-tool-card-spec) — the schema this reads.
 - [**`mcp-tool-card-stamp`**](https://github.com/mizcausevic-dev/mcp-tool-card-stamp) — build the cards this analyzes.
 - [**`mcp-tool-card-diff`**](https://github.com/mizcausevic-dev/mcp-tool-card-diff) — diff two cards across versions.
-- [**`mcp-tool-card-summary`**](https://github.com/mizcausevic-dev/mcp-tool-card-summary) — single-card badge surface.
+- [**`mcp-tool-card-summary`**](https://github.com/mizcausevic-dev/mcp-tool-card-summary) — earlier directory-level analyzer; review consumer migration before retirement.
 - [**`agent-card-fleet-summary`**](https://github.com/mizcausevic-dev/agent-card-fleet-summary), [**`prompt-provenance-fleet-summary`**](https://github.com/mizcausevic-dev/prompt-provenance-fleet-summary), [**`evidence-bundle-fleet-summary`**](https://github.com/mizcausevic-dev/evidence-bundle-fleet-summary) — siblings across the suite.
 
 ## License
