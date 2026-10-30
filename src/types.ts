@@ -3,7 +3,7 @@
 
 export type SideEffectClass = "read" | "mutating" | "external" | "destructive";
 export type PiiExposure = "none" | "low" | "medium" | "high";
-export type SecretsExposure = "none" | "reads_secret_material" | "writes_secret_material";
+export type SecretsExposure = "none" | "reads_secret_material" | "writes_secret_material" | "handles_keys";
 
 export interface ToolCard {
   tool_card_version: string;
@@ -54,6 +54,9 @@ export interface FleetSummaryRow {
   version: string;
   sideEffect: SideEffectClass;
   piiExposure: PiiExposure | "unset";
+  secretsExposure: SecretsExposure | "unset";
+  reversible: boolean;
+  rateLimited: boolean;
   humanApproval: boolean;
   hasAudit: boolean;
   hasTestedWith: boolean;
@@ -65,7 +68,9 @@ export interface FleetReport {
   cards: number;
   bySideEffect: Record<SideEffectClass, number>;
   byPiiExposure: Record<PiiExposure | "unset", number>;
+  bySecretsExposure: Record<SecretsExposure | "unset", number>;
   destructiveTools: number;
+  reversibleTools: number;
   toolsRequiringApproval: number;
   toolsWithAudit: number;
   toolsWithTestedWith: number;
