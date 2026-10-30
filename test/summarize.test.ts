@@ -1,4 +1,7 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { run } from "../src/cli.js";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -35,6 +38,48 @@ describe("summarize", () => {
     expect(r.byPiiExposure.low).toBe(1);
     expect(r.byPiiExposure.medium).toBe(2);
     expect(r.byPiiExposure.high).toBe(2);
+  });
+
+  it("preserves secrets, reversibility, and approval counts from the older summary", () => {
+    const r = summarize(loadFleet(), NOW);
+    expect(r.bySecretsExposure).toEqual({
+      none: 1,
+      reads_secret_material: 0,
+      writes_secret_material: 2,
+      handles_keys: 0,
+      unset: 2
+    });
+    expect(r.reversibleTools).toBe(1);
+    expect(r.toolsRequiringApproval).toBe(1);
+    expect(r.rows.find((row) => row.toolName === "search-vectorstore")).toMatchObject({
+      secretsExposure: "none",
+      reversible: true,
+      rateLimited: true
+    });
+    const md = toMarkdown(r);
+    expect(md).toContain("Secrets exposure:");
+    expect(md).toContain("Reversible: 1/5");
+  });
+
+  it("counts handles_keys declared by the Tool Card schema", () => {
+    const card = loadFleet()[0];
+    card.safety.secrets_exposure = "handles_keys";
+    const r = summarize([card], NOW);
+    expect(r.bySecretsExposure.handles_keys).toBe(1);
+  });
+
+  it("--fail-on-gaps gates destructive approval only, independently of --fail-on-high", () => {
+    const dir = `${here}/../fixtures/cards`;
+    expect(run([dir, "--format", "summary", "--now", NOW, "--fail-on-gaps"])).toBe(1);
+    expect(run([dir, "--format", "summary", "--now", NOW, "--fail-on-high"])).toBe(1);
+    const tmp = mkdtempSync(join(tmpdir(), "kg-tool-cards-"));
+    try {
+      copyFileSync(join(dir, "high-pii-unrate-limited.json"), join(tmp, "card.json"));
+      expect(run([tmp, "--format", "summary", "--now", NOW, "--fail-on-gaps"])).toBe(0);
+      expect(run([tmp, "--format", "summary", "--now", NOW, "--fail-on-high"])).toBe(1);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   it("flags destructive-without-human-approval (high)", () => {
