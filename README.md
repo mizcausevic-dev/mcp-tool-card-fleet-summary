@@ -60,6 +60,22 @@ console.log(report.findings);
 console.log(toMarkdown(report));
 ```
 
+## Migration from `mcp-tool-card-summary`
+
+The earlier package also analyzes a directory of cards. This package adds audit and tested-with findings, but its JSON, TypeScript, Markdown, and one-line output are **not drop-in compatible**. Update consumers explicitly:
+
+| Earlier report | This report |
+|---|---|
+| `byPii` | `byPiiExposure` (includes `unset`) |
+| `bySecrets` | `bySecretsExposure` (includes `unset`) |
+| `reversibleCount` | `reversibleTools` |
+| `humanApprovalRequiredCount` | `toolsRequiringApproval` |
+| `approvalGaps` | Filter `findings` for `destructive-without-human-approval` |
+| `rows[].rate_limited` | `rows[].rateLimited` |
+| `--fail-on-gaps` | Same targeted gate; `--fail-on-high` additionally gates all high findings |
+
+The older row identifier is `server_id/name`; this package uses `server_id:name@version`. Do not archive the earlier repository until consumers and links are migrated and an exact fixture comparison is reviewed.
+
 ## Composes with
 
 - [**`mcp-tool-card-spec`**](https://github.com/mizcausevic-dev/mcp-tool-card-spec) — the schema this reads.
