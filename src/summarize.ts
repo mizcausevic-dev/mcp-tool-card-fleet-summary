@@ -3,6 +3,7 @@ import type {
   FleetReport,
   FleetSummaryRow,
   PiiExposure,
+  SecretsExposure,
   SideEffectClass,
   ToolCard
 } from "./types.js";
@@ -13,6 +14,9 @@ function emptySideEffectCounts(): Record<SideEffectClass, number> {
 function emptyPiiCounts(): Record<PiiExposure | "unset", number> {
   return { none: 0, low: 0, medium: 0, high: 0, unset: 0 };
 }
+function emptySecretsCounts(): Record<SecretsExposure | "unset", number> {
+  return { none: 0, reads_secret_material: 0, writes_secret_material: 0, handles_keys: 0, unset: 0 };
+}
 
 export function summarize(cards: ToolCard[], now?: string): FleetReport {
   const generatedAt = now ?? new Date().toISOString();
@@ -20,7 +24,9 @@ export function summarize(cards: ToolCard[], now?: string): FleetReport {
   const findings: Finding[] = [];
   const bySideEffect = emptySideEffectCounts();
   const byPiiExposure = emptyPiiCounts();
+  const bySecretsExposure = emptySecretsCounts();
   let destructiveTools = 0;
+  let reversibleTools = 0;
   let toolsRequiringApproval = 0;
   let toolsWithAudit = 0;
   let toolsWithTestedWith = 0;
@@ -30,6 +36,8 @@ export function summarize(cards: ToolCard[], now?: string): FleetReport {
     const id = `${c.tool.server_id}:${c.tool.name}@${c.tool.version}`;
     const sideEffect = c.safety.side_effect_class;
     const piiExposure: PiiExposure | "unset" = c.safety.pii_exposure ?? "unset";
+    const secretsExposure: SecretsExposure | "unset" = c.safety.secrets_exposure ?? "unset";
+    const reversible = c.safety.reversible === true;
     const humanApproval = c.safety.human_approval_required === true;
     const hasAudit = !!c.audit?.log_uri;
     const tested = c.tested_with ?? [];
@@ -37,7 +45,9 @@ export function summarize(cards: ToolCard[], now?: string): FleetReport {
 
     if (sideEffect in bySideEffect) bySideEffect[sideEffect] += 1;
     if (piiExposure in byPiiExposure) byPiiExposure[piiExposure] += 1;
+    if (secretsExposure in bySecretsExposure) bySecretsExposure[secretsExposure] += 1;
     if (sideEffect === "destructive") destructiveTools += 1;
+    if (reversible) reversibleTools += 1;
     if (humanApproval) toolsRequiringApproval += 1;
     if (hasAudit) toolsWithAudit += 1;
     if (hasTestedWith) toolsWithTestedWith += 1;
@@ -49,6 +59,9 @@ export function summarize(cards: ToolCard[], now?: string): FleetReport {
       version: c.tool.version,
       sideEffect,
       piiExposure,
+      secretsExposure,
+      reversible,
+      rateLimited: c.safety.rate_limited === true,
       humanApproval,
       hasAudit,
       hasTestedWith,
@@ -148,7 +161,9 @@ export function summarize(cards: ToolCard[], now?: string): FleetReport {
     cards: rows.length,
     bySideEffect,
     byPiiExposure,
+    bySecretsExposure,
     destructiveTools,
+    reversibleTools,
     toolsRequiringApproval,
     toolsWithAudit,
     toolsWithTestedWith,
