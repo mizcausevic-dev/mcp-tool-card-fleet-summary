@@ -14,6 +14,7 @@ interface Args {
   format: Format;
   now?: string;
   failOnHigh: boolean;
+  failOnGaps: boolean;
   out?: string;
   help: boolean;
 }
@@ -21,7 +22,7 @@ interface Args {
 const FORMATS: Format[] = ["json", "markdown", "summary"];
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { format: "json", failOnHigh: false, help: false };
+  const args: Args = { format: "json", failOnHigh: false, failOnGaps: false, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "-h" || a === "--help") args.help = true;
@@ -31,6 +32,7 @@ function parseArgs(argv: string[]): Args {
       args.format = v;
     } else if (a === "--now") args.now = argv[++i];
     else if (a === "--fail-on-high") args.failOnHigh = true;
+    else if (a === "--fail-on-gaps") args.failOnGaps = true;
     else if (a === "--out") args.out = argv[++i];
     else if (!a.startsWith("-")) args.dir = a;
     else throw new Error(`Unknown option: ${a}`);
@@ -44,10 +46,11 @@ Usage:
   mcp-tool-card-fleet-summary <cards-dir>
       [--format json|markdown|summary]
       [--now <iso>]
-      [--fail-on-high] [--out FILE]
+      [--fail-on-high] [--fail-on-gaps] [--out FILE]
 
 Reads every *.json file in <cards-dir> as a Tool Card v0.1 and emits
-counts by side_effect_class / pii_exposure, plus findings:
+counts by side_effect_class / pii_exposure / secrets_exposure,
+reversibility, and approval, plus findings:
 
   - destructive-without-human-approval (high)
   - destructive-without-audit-log (high)
@@ -60,8 +63,8 @@ counts by side_effect_class / pii_exposure, plus findings:
   - no-cost-metrics (info)
 
 Exit codes:
-  0 — no high findings (or --fail-on-high not set)
-  1 — high finding AND --fail-on-high set
+  0 — no selected gate findings
+  1 — high finding with --fail-on-high, or destructive approval gap with --fail-on-gaps
   2 — usage / I/O error`;
 
 function loadCards(dir: string): ToolCard[] {
@@ -106,6 +109,7 @@ export function run(argv: string[]): number {
   else process.stdout.write(`${out}\n`);
 
   if (args.failOnHigh && !report.ok) return 1;
+  if (args.failOnGaps && report.findings.some((f) => f.code === "destructive-without-human-approval")) return 1;
   return 0;
 }
 

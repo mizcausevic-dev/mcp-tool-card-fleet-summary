@@ -25,14 +25,17 @@ export function toMarkdown(report: FleetReport): string {
   lines.push(
     `- PII exposure: none=${p.none} · low=${p.low} · medium=${p.medium} · high=${p.high} · unset=${p.unset}`
   );
+  const x = report.bySecretsExposure;
+  lines.push(`- Secrets exposure: none=${x.none} · reads=${x.reads_secret_material} · writes=${x.writes_secret_material} · handles_keys=${x.handles_keys} · unset=${x.unset}`);
+  lines.push(`- Reversible: ${report.reversibleTools}/${report.cards}`);
   lines.push(``);
   lines.push(`## Per tool`);
   lines.push(``);
-  lines.push(`| tool | side effect | PII | approval | audit | tested-with |`);
-  lines.push(`|---|---|---|:---:|:---:|---:|`);
+  lines.push(`| tool | side effect | PII | secrets | reversible | approval | audit | tested-with |`);
+  lines.push(`|---|---|---|---|:---:|:---:|:---:|---:|`);
   for (const r of report.rows) {
     lines.push(
-      `| \`${r.id}\` | ${r.sideEffect} | ${r.piiExposure} | ${r.humanApproval ? "✓" : "—"} | ${r.hasAudit ? "✓" : "—"} | ${r.testedSuites} |`
+      `| \`${r.id}\` | ${r.sideEffect} | ${r.piiExposure} | ${r.secretsExposure} | ${r.reversible ? "✓" : "—"} | ${r.humanApproval ? "✓" : "—"} | ${r.hasAudit ? "✓" : "—"} | ${r.testedSuites} |`
     );
   }
 
@@ -56,5 +59,6 @@ export function toMarkdown(report: FleetReport): string {
 export function toSummary(report: FleetReport): string {
   const counts: Record<FindingSeverity, number> = { high: 0, medium: 0, low: 0, info: 0 };
   for (const f of report.findings) counts[f.severity] += 1;
-  return `${report.cards} card${report.cards === 1 ? "" : "s"} · ${report.destructiveTools} destructive · ${report.toolsWithAudit} audited · ${counts.high} high · ${counts.medium} medium (${report.ok ? "ok" : "fail"})`;
+  const gaps = report.findings.filter((f) => f.code === "destructive-without-human-approval").length;
+  return `${report.cards} card${report.cards === 1 ? "" : "s"} · ${report.destructiveTools} destructive · ${report.toolsRequiringApproval} require approval · ${gaps} approval gaps · ${report.toolsWithAudit} audited · ${counts.high} high · ${counts.medium} medium (${report.ok ? "ok" : "fail"})`;
 }
