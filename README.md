@@ -95,8 +95,9 @@ The older row identifier is `server_id/name`; this package uses `server_id:name@
 - [**`mcp-tool-card-spec`**](https://github.com/mizcausevic-dev/mcp-tool-card-spec) — the schema this reads.
 - [**`mcp-tool-card-stamp`**](https://github.com/mizcausevic-dev/mcp-tool-card-stamp) — build the cards this analyzes.
 - [**`mcp-tool-card-diff`**](https://github.com/mizcausevic-dev/mcp-tool-card-diff) — diff two cards across versions.
-- [**`mcp-tool-card-summary`**](https://github.com/mizcausevic-dev/mcp-tool-card-summary) — earlier directory-level analyzer; review consumer migration before retirement.
 - [**`agent-card-fleet-summary`**](https://github.com/mizcausevic-dev/agent-card-fleet-summary), [**`prompt-provenance-fleet-summary`**](https://github.com/mizcausevic-dev/prompt-provenance-fleet-summary), [**`evidence-bundle-fleet-summary`**](https://github.com/mizcausevic-dev/evidence-bundle-fleet-summary) — siblings across the suite.
+
+Historical reference: [**`mcp-tool-card-summary`**](https://github.com/mizcausevic-dev/mcp-tool-card-summary), the earlier directory-level analyzer, is archived and read-only on GitHub as checked on 2026-10-30. Its source remains available; the migration guidance above still applies.
 
 ## License
 
